@@ -1,14 +1,17 @@
 import argparse
+import os
 
 import json
 import torch
 
 from models.styleganv2.model import Generator
 
+dir_name = os.path.dirname(__file__)
+
 #Args parser
 parser = argparse.ArgumentParser(description='Model config')
 parser.add_argument('--config', type=str, dest='config_path',
-                    help='path to config', default='configs/lsun_churches.json')
+                    help='path to config', default=os.path.join(dir_name, 'configs/lsun_churches.json'))
 
 parser.add_argument('--weights', type=str, dest='stylegan_weights',
                     help='path to StyleGANv2 pytorch weights', required=True)
