@@ -1,0 +1,1 @@
+Using the following implementation of the StyleGANv2: https://github.com/rosinality/stylegan2-pytorch

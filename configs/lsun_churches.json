@@ -1,0 +1,8 @@
+{
+	"generate": true,
+	"stylegan": {
+		"size": 256,
+		"style_dim": 512,
+		"n_mlp": 8
+	}
+}
