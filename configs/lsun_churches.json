@@ -4,5 +4,9 @@
 		"size": 256,
 		"style_dim": 512,
 		"n_mlp": 8
+	},
+	"optimization": {
+		"lr": 0.001,
+		"opt_steps": 40
 	}
 }
