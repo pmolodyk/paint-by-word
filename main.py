@@ -4,8 +4,8 @@ from pathlib import Path
 
 import json
 import torch
+import torchvision
 from tqdm import tqdm
-from PIL import Image
 
 from models.styleganv2.model import Generator
 
@@ -47,5 +47,5 @@ else:
     mean_latent = stylegan_generator.mean_latent(4096)
     latent = mean_latent.detach().clone().repeat(1, 18, 1).detach().clone()
     current_image, _ = stylegan_generator([latent], input_is_latent=True, randomize_noise=False)
-    Image.fromarray(current_image.detach().clone().cpu().numpy()).save(os.path.join(results_path, 'initial_image.jpg'))
+    torchvision.utils.save_image(current_image, os.path.join(results_path, 'initial_image'), normalize=True, range=(-1, 1))
     latent.requires_grad = True
