@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 import json
+import numpy as np
 import torch
 import torchvision
 from tqdm import tqdm
@@ -20,6 +21,8 @@ parser.add_argument('--weights', type=str, dest='stylegan_weights',
                     help='path to StyleGANv2 pytorch weights', required=True)
 
 parser.add_argument('--results', type=str, dest='results_path', help='Path to save results', required=True)
+
+parser.add_argument('--mask', type=str, dest='mask_path', help='Path to .npy file with the mask array', required=True)
 
 args = parser.parse_args()
 config_path = args.config_path
@@ -40,6 +43,7 @@ stylegan_generator.eval()
 # Optimization settings
 opt_steps = config['optimization']['opt_steps']
 lr = config['optimization']['lr']
+mask = torch.Tensor(np.load(args.mask_path)).cuda()
 
 if 'generate' in config and not config['generate']:
     raise RuntimeError('Edit not supported yet, set generate to true in config')  # TODO
@@ -48,4 +52,7 @@ else:
     latent = mean_latent.detach().clone().repeat(1, 18, 1).detach().clone()
     current_image, _ = stylegan_generator([latent], input_is_latent=True, randomize_noise=False)
     torchvision.utils.save_image(current_image, os.path.join(results_path, 'initial_image.jpg'), normalize=True, range=(-1, 1))
-    latent.requires_grad = True
+
+w_add = torch.zeros(latent.shape).cuda()
+w_add.requires_grad = True
+
