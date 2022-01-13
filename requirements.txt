@@ -2,3 +2,5 @@ torch
 tqdm
 torchvision
 numpy
+git+https://github.com/openai/CLIP.git
+lpips
