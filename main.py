@@ -1,4 +1,5 @@
 import argparse
+import math
 import os
 from pathlib import Path
 
@@ -9,6 +10,7 @@ import torchvision
 from tqdm import tqdm
 
 from models.styleganv2.model import Generator
+from utils import generate_masks
 
 dir_name = os.path.dirname(__file__)
 
@@ -43,7 +45,6 @@ stylegan_generator.eval()
 # Optimization settings
 opt_steps = config['optimization']['opt_steps']
 lr = config['optimization']['lr']
-mask = torch.Tensor(np.load(args.mask_path)).cuda()
 
 if 'generate' in config and not config['generate']:
     raise RuntimeError('Edit not supported yet, set generate to true in config')  # TODO
@@ -56,3 +57,7 @@ else:
 w_add = torch.zeros(latent.shape).cuda()
 w_add.requires_grad = True
 
+# Masks for every resolution
+mask = torch.Tensor(np.load(args.mask_path)).cuda()
+upscale_layers_num = int(math.log(stylegan_size)) - 2
+mask_by_resolution = generate_masks(upscale_layers_num, mask)
