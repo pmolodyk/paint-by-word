@@ -59,5 +59,5 @@ w_add.requires_grad = True
 
 # Masks for every resolution
 mask = torch.Tensor(np.load(args.mask_path)).cuda()
-upscale_layers_num = int(math.log(stylegan_size)) - 2
+upscale_layers_num = int(math.log(stylegan_size, 2)) - 2
 mask_by_resolution = generate_masks(upscale_layers_num, mask)
