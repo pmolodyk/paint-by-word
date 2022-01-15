@@ -392,6 +392,7 @@ class Generator(nn.Module):
         style_dim,
         n_mlp,
         masks,
+        w1,
         channel_multiplier=2,
         blur_kernel=[1, 3, 3, 1],
         lr_mlp=0.01,
@@ -425,7 +426,7 @@ class Generator(nn.Module):
             1024: 16 * channel_multiplier,
         }
 
-        self.w1 = nn.Parameter(torch.zeros(style_dim))  # Vector to add to masked image
+        self.w1 = nn.Parameter(w1.clone())  # Vector to add to masked image
         self.input = ConstantInput(self.channels[4])
         self.conv1 = StyledConv(
             self.channels[4], self.channels[4], 3, style_dim, blur_kernel=blur_kernel
