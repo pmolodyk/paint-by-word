@@ -2,7 +2,7 @@ from torch.nn.functional import interpolate
 
 
 def generate_masks(amount, original):
-    current_res = original.shape[1] // 2
+    current_res = original.shape[1]
     current_mask = original.clone().unsqueeze(0).unsqueeze(0)
     result = {current_res: current_mask}
     for i in range(1, amount):

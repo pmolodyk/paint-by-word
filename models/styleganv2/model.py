@@ -556,22 +556,17 @@ class Generator(nn.Module):
         for conv1, conv2, noise1, noise2, to_rgb in zip(
             self.convs[::2], self.convs[1::2], noise[1::2], noise[2::2], self.to_rgbs
         ):
-            curr_mask = self.masks[out.shape[-1]]
-            internal = curr_mask * out
-            external = (1 - curr_mask) * out
-            skip_internal = curr_mask * skip
-            skip_external = (1 - curr_mask) * skip
-
-            internal = conv1(internal, self.w1[:, i], noise=noise1)
+            internal = conv1(out, self.w1[:, i], noise=noise1)
             internal = conv2(internal, self.w1[:, i + 1], noise=noise2)
-            skip_internal = to_rgb(internal, self.w1[:, i + 2], skip_internal)
+            skip_internal = to_rgb(internal, self.w1[:, i + 2], skip)
 
-            external = conv1(external, latent[:, i], noise=noise1)
+            external = conv1(out, latent[:, i], noise=noise1)
             external = conv2(external, latent[:, i + 1], noise=noise2)
-            skip_external = to_rgb(external, latent[:, i + 2], skip_external)
+            skip_external = to_rgb(external, latent[:, i + 2], skip)
 
-            out = internal + external
-            skip = skip_internal + skip_external
+            mask = self.masks[internal.shape[-1]]
+            out = internal * mask + external * (1 - mask)
+            skip = skip_internal * mask + skip_external * (1 - mask)
 
             i += 2
 
