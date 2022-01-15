@@ -391,6 +391,7 @@ class Generator(nn.Module):
         size,
         style_dim,
         n_mlp,
+        masks,
         channel_multiplier=2,
         blur_kernel=[1, 3, 3, 1],
         lr_mlp=0.01,
@@ -432,6 +433,7 @@ class Generator(nn.Module):
         self.to_rgb1 = ToRGB(self.channels[4], style_dim, upsample=False)
 
         self.log_size = int(math.log(size, 2))
+        self.masks = masks
         self.num_layers = (self.log_size - 2) * 2 + 1
 
         self.convs = nn.ModuleList()
@@ -550,14 +552,29 @@ class Generator(nn.Module):
         skip = self.to_rgb1(out, latent[:, 1])
 
         i = 1
+        mask_num = 0
         for conv1, conv2, noise1, noise2, to_rgb in zip(
             self.convs[::2], self.convs[1::2], noise[1::2], noise[2::2], self.to_rgbs
         ):
-            out = conv1(out, latent[:, i], noise=noise1)
-            out = conv2(out, latent[:, i + 1], noise=noise2)
-            skip = to_rgb(out, latent[:, i + 2], skip)
+            curr_mask = self.masks[mask_num]
+            internal = curr_mask * out
+            external = (1 - curr_mask) * out
+            skip_internal = curr_mask * skip
+            skip_external = (1 - curr_mask) * skip
+
+            internal = conv1(internal, self.w1[:, i], noise=noise1)
+            internal = conv2(internal, self.w1[:, i + 1], noise=noise2)
+            skip_internal = to_rgb(internal, self.w1[:, i + 2], skip_internal)
+
+            external = conv1(external, latent[:, i], noise=noise1)
+            external = conv2(external, latent[:, i + 1], noise=noise2)
+            skip_external = to_rgb(external, latent[:, i + 2], skip_external)
+
+            out = internal + external
+            skip = skip_internal + skip_external
 
             i += 2
+            mask_num += 1
 
         image = skip
 

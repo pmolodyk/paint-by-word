@@ -38,7 +38,11 @@ stylegan_size = config['stylegan']['size']
 stylegan_style_dim = config['stylegan']['style_dim']
 stylegan_n_mlp = config['stylegan']['n_mlp']
 
-stylegan_generator = Generator(stylegan_size, stylegan_style_dim, stylegan_n_mlp).cuda()
+mask = torch.Tensor(np.load(args.mask_path)).cuda()
+upscale_layers_num = int(math.log(stylegan_size, 2)) - 2
+mask_by_resolution = generate_masks(upscale_layers_num, mask)
+
+stylegan_generator = Generator(stylegan_size, stylegan_style_dim, stylegan_n_mlp, mask_by_resolution).cuda()
 stylegan_generator.load_state_dict(torch.load(stylegan_weights_path)["g_ema"], strict=False)
 stylegan_generator.eval()
 
@@ -56,8 +60,3 @@ else:
 
 w_add = torch.zeros(latent.shape).cuda()
 w_add.requires_grad = True
-
-# Masks for every resolution
-mask = torch.Tensor(np.load(args.mask_path)).cuda()
-upscale_layers_num = int(math.log(stylegan_size, 2)) - 2
-mask_by_resolution = generate_masks(upscale_layers_num, mask)
