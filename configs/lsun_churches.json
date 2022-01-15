@@ -1,10 +1,8 @@
 {
-	"generate": true,
 	"stylegan": {
 		"size": 256,
 		"style_dim": 512,
-		"n_mlp": 8,
-		"latent_chunk_num": 18
+		"n_mlp": 8
 	},
 	"optimization": {
 		"lr": 0.001,
