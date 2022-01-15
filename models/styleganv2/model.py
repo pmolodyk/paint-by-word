@@ -392,6 +392,7 @@ class Generator(nn.Module):
         style_dim,
         n_mlp,
         masks,
+        w1,
         channel_multiplier=2,
         blur_kernel=[1, 3, 3, 1],
         lr_mlp=0.01,
@@ -425,7 +426,7 @@ class Generator(nn.Module):
             1024: 16 * channel_multiplier,
         }
 
-        self.w1 = nn.Parameter(torch.zeros(style_dim))  # Vector to add to masked image
+        self.w1 = nn.Parameter(w1.clone())  # Vector to add to masked image
         self.input = ConstantInput(self.channels[4])
         self.conv1 = StyledConv(
             self.channels[4], self.channels[4], 3, style_dim, blur_kernel=blur_kernel
@@ -552,11 +553,10 @@ class Generator(nn.Module):
         skip = self.to_rgb1(out, latent[:, 1])
 
         i = 1
-        mask_num = 0
         for conv1, conv2, noise1, noise2, to_rgb in zip(
             self.convs[::2], self.convs[1::2], noise[1::2], noise[2::2], self.to_rgbs
         ):
-            curr_mask = self.masks[mask_num]
+            curr_mask = self.masks[out.shape[-1]]
             internal = curr_mask * out
             external = (1 - curr_mask) * out
             skip_internal = curr_mask * skip
@@ -574,7 +574,6 @@ class Generator(nn.Module):
             skip = skip_internal + skip_external
 
             i += 2
-            mask_num += 1
 
         image = skip
 
