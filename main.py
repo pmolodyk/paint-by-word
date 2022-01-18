@@ -74,7 +74,7 @@ w1.requires_grad = True
 optimizer = Adam([w1], lr=lr)
 for step in tqdm(range(opt_steps)):
     current_image, _ = stylegan_generator([latent], w1, input_is_latent=True, randomize_noise=False)
-    l_sem = - clip_loss(current_image, text_tokenized)
+    l_sem = clip_loss(current_image, text_tokenized)
     l_img = image_loss(external_region, current_image * (1 - mask))
     loss = l_sem + img_lam * l_img
 
