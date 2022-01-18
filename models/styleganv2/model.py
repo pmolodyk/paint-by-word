@@ -555,9 +555,9 @@ class Generator(nn.Module):
         for conv1, conv2, noise1, noise2, to_rgb in zip(
             self.convs[::2], self.convs[1::2], noise[1::2], noise[2::2], self.to_rgbs
         ):
-            internal = conv1(out, self.w1[:, i], noise=noise1)
-            internal = conv2(internal, self.w1[:, i + 1], noise=noise2)
-            skip_internal = to_rgb(internal, self.w1[:, i + 2], skip)
+            internal = conv1(out, w1[:, i], noise=noise1)
+            internal = conv2(internal, w1[:, i + 1], noise=noise2)
+            skip_internal = to_rgb(internal, w1[:, i + 2], skip)
 
             external = conv1(out, latent[:, i], noise=noise1)
             external = conv2(external, latent[:, i + 1], noise=noise2)

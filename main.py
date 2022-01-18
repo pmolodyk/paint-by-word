@@ -1,9 +1,10 @@
 import argparse
+import json
 import math
 import os
 from pathlib import Path
 
-import json
+import clip
 import numpy as np
 import torch
 from torch.optim import Adam
@@ -62,17 +63,18 @@ img_lam = config['optimization']['img_loss_lambda']
 clip_loss = CLIPLoss(stylegan_size)
 image_loss = ImgLoss(lam=l2_lam)
 
-text_input = args.text_input
-current_image, _ = stylegan_generator([latent], w1, input_is_latent=True, randomize_noise=False)
+text_tokenized = torch.cat([clip.tokenize(args.text_input)]).cuda()
+with torch.no_grad():
+    current_image, _ = stylegan_generator([latent], w1, input_is_latent=True, randomize_noise=False)
 torchvision.utils.save_image(current_image, os.path.join(results_path, 'initial_image.jpg'), normalize=True, range=(-1, 1))
 external_region = current_image.clone() * (1 - mask)
 
 # Optimization
 w1.requires_grad = True
-optimizer = Adam(w1, lr=lr)
+optimizer = Adam([w1], lr=lr)
 for step in tqdm(range(opt_steps)):
     current_image, _ = stylegan_generator([latent], w1, input_is_latent=True, randomize_noise=False)
-    l_sem = - clip_loss(current_image, text_input)
+    l_sem = - clip_loss(current_image, text_tokenized)
     l_img = image_loss(external_region, current_image * (1 - mask))
     loss = l_sem + img_lam * l_img
 

@@ -4,7 +4,7 @@ import torch
 class ImgLoss(torch.nn.Module):
     def __init__(self, lam, lpips_mode='vgg'):   # Mode change not recommended
         super(ImgLoss, self).__init__()
-        self.lpips = lpips.LPIPS(net=lpips_mode)
+        self.lpips = lpips.LPIPS(net=lpips_mode).cuda()
         self.lam = lam
         self.l2 = torch.nn.MSELoss()
 
