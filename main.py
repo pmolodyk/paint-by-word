@@ -31,6 +31,7 @@ parser.add_argument('--mask', type=str, dest='mask_path', help='Path to .npy fil
 parser.add_argument('--latent_path', type=str, dest='latent_path',
                     help='Path to .pt file with the input image latent code', required=True)
 parser.add_argument('--text', type=str, dest='text_input')
+parser.add_argument('--seed', type=int, default=None, dest='seed')
 
 args = parser.parse_args()
 config_path = args.config_path
@@ -39,11 +40,19 @@ stylegan_weights_path = args.stylegan_weights
 results_path = args.results_path
 Path(results_path).mkdir(parents=True, exist_ok=True)
 
+# Random
+seed = args.seed
+if seed is not None:
+    torch.backends.cudnn.benchmark = False
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+
 # StyleGANv2
 config = json.load(open(config_path, 'r'))
 stylegan_size = config['stylegan']['size']
 stylegan_style_dim = config['stylegan']['style_dim']
 stylegan_n_mlp = config['stylegan']['n_mlp']
+no_split_layers_num = config['optimization']['no_split_layers_num']
 
 mask = torch.Tensor(np.load(args.mask_path)).cuda()
 latent = torch.load(latent_path).cuda()
@@ -51,7 +60,8 @@ upscale_layers_num = int(math.log(stylegan_size, 2)) - 1
 mask_by_resolution = generate_masks(upscale_layers_num, mask)
 
 w1 = latent.clone().cuda()
-stylegan_generator = Generator(stylegan_size, stylegan_style_dim, stylegan_n_mlp, mask_by_resolution).cuda()
+stylegan_generator = Generator(stylegan_size, stylegan_style_dim, stylegan_n_mlp, mask_by_resolution,
+                               no_split_layers_num=no_split_layers_num).cuda()
 stylegan_generator.load_state_dict(torch.load(stylegan_weights_path)["g_ema"], strict=False)
 stylegan_generator.eval()
 
@@ -62,11 +72,10 @@ l2_lam = config['optimization']['l2_loss_lambda']
 img_lam = config['optimization']['img_loss_lambda']
 clip_loss = CLIPLoss(stylegan_size)
 image_loss = ImgLoss(lam=l2_lam)
-no_split_layers_num = config['optimization']['no_split_layers_num']
 
 text_tokenized = torch.cat([clip.tokenize(args.text_input)]).cuda()
 with torch.no_grad():
-    current_image, _ = stylegan_generator([latent], w1, no_split_layers_num=no_split_layers_num, input_is_latent=True, randomize_noise=False)
+    current_image, _ = stylegan_generator([latent], w1, input_is_latent=True, randomize_noise=False)
 torchvision.utils.save_image(current_image, os.path.join(results_path, 'initial_image.jpg'), normalize=True, range=(-1, 1))
 external_region = current_image.clone() * (1 - mask)
 

@@ -9,6 +9,6 @@
 		"opt_steps": 30,
 		"l2_loss_lambda": 1,
 		"img_loss_lambda": 0.04,
-		"no_split_layers_num": 2
+		"no_split_layers_num": 3
 	}
 }
