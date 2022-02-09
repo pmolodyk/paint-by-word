@@ -5,9 +5,9 @@
 		"n_mlp": 8
 	},
 	"optimization": {
-		"lr": 0.1,
-		"opt_steps": 40,
+		"lr": 0.05,
+		"opt_steps": 30,
 		"l2_loss_lambda": 1,
-		"img_loss_lambda": 0.02
+		"img_loss_lambda": 0.04
 	}
 }
