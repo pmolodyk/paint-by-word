@@ -62,10 +62,11 @@ l2_lam = config['optimization']['l2_loss_lambda']
 img_lam = config['optimization']['img_loss_lambda']
 clip_loss = CLIPLoss(stylegan_size)
 image_loss = ImgLoss(lam=l2_lam)
+no_split_layers_num = config['optimization']['no_split_layers_num']
 
 text_tokenized = torch.cat([clip.tokenize(args.text_input)]).cuda()
 with torch.no_grad():
-    current_image, _ = stylegan_generator([latent], w1, input_is_latent=True, randomize_noise=False)
+    current_image, _ = stylegan_generator([latent], w1, no_split_layers_num=no_split_layers_num, input_is_latent=True, randomize_noise=False)
 torchvision.utils.save_image(current_image, os.path.join(results_path, 'initial_image.jpg'), normalize=True, range=(-1, 1))
 external_region = current_image.clone() * (1 - mask)
 

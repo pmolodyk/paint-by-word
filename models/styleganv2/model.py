@@ -392,6 +392,7 @@ class Generator(nn.Module):
         style_dim,
         n_mlp,
         masks,
+        no_split_layers_num=0,
         channel_multiplier=2,
         blur_kernel=[1, 3, 3, 1],
         lr_mlp=0.01,
@@ -434,6 +435,7 @@ class Generator(nn.Module):
         self.log_size = int(math.log(size, 2))
         self.masks = masks
         self.num_layers = (self.log_size - 2) * 2 + 1
+        self.no_split_layers_num = no_split_layers_num
 
         self.convs = nn.ModuleList()
         self.upsamples = nn.ModuleList()
@@ -552,23 +554,29 @@ class Generator(nn.Module):
         skip = self.to_rgb1(out, latent[:, 1])
 
         i = 1
+        layer_i = 0
         for conv1, conv2, noise1, noise2, to_rgb in zip(
             self.convs[::2], self.convs[1::2], noise[1::2], noise[2::2], self.to_rgbs
         ):
-            internal = conv1(out, w1[:, i], noise=noise1)
-            internal = conv2(internal, w1[:, i + 1], noise=noise2)
-            skip_internal = to_rgb(internal, w1[:, i + 2], skip)
+            if layer_i + self.no_split_layers_num < len(self.to_rgbs):
+                internal = conv1(out, w1[:, i], noise=noise1)
+                internal = conv2(internal, w1[:, i + 1], noise=noise2)
+                skip_internal = to_rgb(internal, w1[:, i + 2], skip)
 
-            external = conv1(out, latent[:, i], noise=noise1)
-            external = conv2(external, latent[:, i + 1], noise=noise2)
-            skip_external = to_rgb(external, latent[:, i + 2], skip)
+                external = conv1(out, latent[:, i], noise=noise1)
+                external = conv2(external, latent[:, i + 1], noise=noise2)
+                skip_external = to_rgb(external, latent[:, i + 2], skip)
 
-            mask = self.masks[internal.shape[-1]]
-            out = internal * mask + external * (1 - mask)
-            skip = skip_internal * mask + skip_external * (1 - mask)
+                mask = self.masks[internal.shape[-1]]
+                out = internal * mask + external * (1 - mask)
+                skip = skip_internal * mask + skip_external * (1 - mask)
+            else:
+                out = conv1(out, latent[:, i], noise=noise1)
+                out = conv2(out, latent[:, i + 1], noise=noise2)
+                skip = to_rgb(out, latent[:, i + 2], skip)
 
             i += 2
-
+            layer_i += 1
         image = skip
 
         if return_latents:
