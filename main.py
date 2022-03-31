@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 import clip
+import lpips
 import numpy as np
 import torch
 from torch.optim import Adam
@@ -56,15 +57,18 @@ lr = config['optimization']['lr']
 l2_lam = config['optimization']['l2_loss_lambda']
 img_lam = config['optimization']['img_loss_lambda']
 latent_prox_lam = config['optimization']['latent_prox_lam']
+global_lpips_lam = config['optimization']['global_lpips_lam']
 clip_loss = CLIPLoss(stylegan_size)
 image_loss = ImgLoss(lam=l2_lam)
 latent_proximity_loss = torch.nn.MSELoss()
+global_lpips_loss = lpips.LPIPS(net='vgg').cuda()
 
 text_tokenized = torch.cat([clip.tokenize(args.text_input)]).cuda()
 with torch.no_grad():
     current_image, _ = stylegan_generator([latent], w1, input_is_latent=True, randomize_noise=False)
 torchvision.utils.save_image(current_image, os.path.join(results_path, 'initial_image.jpg'), normalize=True, range=(-1, 1))
 external_region = current_image.clone() * (1 - mask)
+initial_image = current_image.clone().detach()
 
 # Optimization
 w1.requires_grad = True
@@ -74,7 +78,8 @@ for step in tqdm(range(opt_steps)):
     l_sem = clip_loss(current_image, text_tokenized)
     l_img = image_loss(external_region, current_image * (1 - mask))
     l_prox = latent_proximity_loss(latent, w1)
-    loss = l_sem + img_lam * l_img + l_prox * latent_prox_lam
+    l_global = global_lpips_loss(initial_image, current_image)
+    loss = l_sem + img_lam * l_img + l_prox * latent_prox_lam + l_global * global_lpips_lam
 
     optimizer.zero_grad()
     loss.backward()
