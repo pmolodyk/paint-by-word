@@ -1,6 +1,7 @@
 import lpips
 import torch
 
+
 class ImgLoss(torch.nn.Module):
     def __init__(self, lam, lpips_mode='vgg'):   # Mode change not recommended
         super(ImgLoss, self).__init__()
