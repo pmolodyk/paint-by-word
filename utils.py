@@ -32,3 +32,4 @@ def get_args(dir_name):
     parser.add_argument('--seed', type=int, default=None, dest='seed')
 
     args = parser.parse_args()
+    return args
