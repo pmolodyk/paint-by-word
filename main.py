@@ -92,13 +92,12 @@ optimizer = Adam([w1], lr=lr)
 for step in tqdm(range(opt_steps)):
     current_image, _ = stylegan_generator([latent], w1, input_is_latent=True, randomize_noise=False)
     critic_verdict_fake = stylegan_discriminator(current_image)
-    critic_verdict_real = stylegan_discriminator(initial_image)
 
     l_sem = clip_loss(current_image, text_tokenized)
     l_img = image_loss(external_region, current_image * (1 - mask))
     l_prox = latent_proximity_loss(latent, w1)
     l_global = global_lpips_loss(initial_image, current_image)
-    l_disc = discriminator_loss(critic_verdict_real, critic_verdict_fake)
+    l_disc = discriminator_loss(critic_verdict_fake)
     loss = l_sem * sem_lam \
             + l_img * img_lam \
             + l_prox * latent_prox_lam \

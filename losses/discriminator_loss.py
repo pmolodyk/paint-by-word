@@ -6,7 +6,6 @@ class DLogisticLoss(torch.nn.Module):
     def __init__(self):
         super(DLogisticLoss, self).__init__()
 
-    def forward(self, real_pred, fake_pred):
-        real_loss = F.softplus(-real_pred)
+    def forward(self, fake_pred):
         fake_loss = F.softplus(fake_pred)
-        return real_loss.mean() + fake_loss.mean()
+        return -fake_loss.mean()
