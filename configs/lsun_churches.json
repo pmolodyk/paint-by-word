@@ -7,10 +7,12 @@
 	"optimization": {
 		"lr": 0.05,
 		"opt_steps": 30,
+		"semantic_loss_lambda": 1,
 		"l2_loss_lambda": 1,
 		"img_loss_lambda": 0.04,
 		"latent_prox_lam": 0,
 		"global_lpips_lam": 0,
+		"discriminator_loss_lam": 0,
 		"no_split_layers_num": 3
 	}
 }
