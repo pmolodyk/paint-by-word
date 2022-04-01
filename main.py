@@ -54,7 +54,7 @@ stylegan_generator = Generator(stylegan_size, stylegan_style_dim, stylegan_n_mlp
 stylegan_generator.load_state_dict(ckpt["g_ema"], strict=False)
 stylegan_generator.eval()
 
-stylegan_discriminator = Discriminator(stylegan_size)
+stylegan_discriminator = Discriminator(stylegan_size).cuda()
 stylegan_discriminator.load_state_dict(ckpt["d"], strict=False)
 stylegan_discriminator.eval()
 
