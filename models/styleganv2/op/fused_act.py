@@ -7,11 +7,17 @@ from torch.nn import functional as F
 
 module_path = os.path.dirname(__file__)
 
+
 class FusedLeakyReLU(nn.Module):
-    def __init__(self, channel, negative_slope=0.2, scale=2 ** 0.5):
+    def __init__(self, channel, bias=True, negative_slope=0.2, scale=2 ** 0.5):
         super().__init__()
 
-        self.bias = nn.Parameter(torch.zeros(channel))
+        if bias:
+            self.bias = nn.Parameter(torch.zeros(channel))
+
+        else:
+            self.bias = None
+
         self.negative_slope = negative_slope
         self.scale = scale
 
