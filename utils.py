@@ -42,5 +42,5 @@ def extract_latent(latent, shape):
         latent = list(latent.items())[0][1]['latent']
     actual_shape = latent.shape
     if len(actual_shape) < 3 or actual_shape[1] != shape:
-        return latent.repeat((1, shape))
+        return latent.repeat((1, shape, 1))
     return latent

@@ -47,7 +47,7 @@ latent = extract_latent(torch.load(latent_path), latent_shape).cuda()
 upscale_layers_num = int(math.log(stylegan_size, 2)) - 1
 mask_by_resolution = generate_masks(upscale_layers_num, mask)
 
-w1 = latent.clone().cuda()
+w1 = latent.detach().clone().cuda()
 
 ckpt = torch.load(stylegan_weights_path)
 stylegan_generator = Generator(stylegan_size, stylegan_style_dim, stylegan_n_mlp, mask_by_resolution,
