@@ -1,4 +1,6 @@
 import argparse
+
+import torch
 from torch.nn.functional import interpolate
 import os
 
@@ -33,3 +35,12 @@ def get_args(dir_name):
 
     args = parser.parse_args()
     return args
+
+
+def extract_latent(latent, shape):
+    if not isinstance(latent, torch.Tensor):
+        latent = list(latent.items())[0][1]['latent']
+    actual_shape = latent.shape
+    if len(actual_shape) < 3 or actual_shape[1] != shape:
+        return latent.repeat((1, shape))
+    return latent

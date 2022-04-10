@@ -15,7 +15,7 @@ from losses.CLIP_loss import CLIPLoss
 from losses.img_loss import ImgLoss
 from losses.discriminator_loss import DLogisticLoss
 from models.styleganv2.model import Generator, Discriminator
-from utils import generate_masks, get_args
+from utils import generate_masks, get_args, extract_latent
 
 dir_name = os.path.dirname(__file__)
 
@@ -40,9 +40,10 @@ stylegan_size = config['stylegan']['size']
 stylegan_style_dim = config['stylegan']['style_dim']
 stylegan_n_mlp = config['stylegan']['n_mlp']
 no_split_layers_num = config['optimization']['no_split_layers_num']
+latent_shape = config['stylegan']['latent_shape']
 
 mask = torch.Tensor(np.load(args.mask_path)).cuda()
-latent = torch.load(latent_path).cuda()
+latent = extract_latent(torch.load(latent_path), latent_shape).cuda()
 upscale_layers_num = int(math.log(stylegan_size, 2)) - 1
 mask_by_resolution = generate_masks(upscale_layers_num, mask)
 
