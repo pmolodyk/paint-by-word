@@ -44,3 +44,11 @@ def extract_latent(latent, shape):
     if len(actual_shape) < 3 or actual_shape[1] != shape:
         return latent.repeat((1, shape, 1))
     return latent
+
+
+# TODO complete
+def get_bounding_rect(image, mask, square=False):
+    indices = torch.argwhere(mask > 0)
+    bottom = torch.max(indices[:, 0])
+    # top = torch.min()
+    pass
