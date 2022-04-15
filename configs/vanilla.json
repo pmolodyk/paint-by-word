@@ -14,6 +14,7 @@
 		"latent_prox_lam": 0,
 		"global_lpips_lam": 0,
 		"discriminator_loss_lam": 0,
-		"no_split_layers_num": 0
+		"no_split_layers_num": 0,
+		"clip_loss_mode": "product"
 	}
 }

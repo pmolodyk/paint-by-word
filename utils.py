@@ -46,9 +46,10 @@ def extract_latent(latent, shape):
     return latent
 
 
-# TODO complete
-def get_bounding_rect(image, mask, square=False):
-    indices = torch.argwhere(mask > 0)
-    bottom = torch.max(indices[:, 0])
-    # top = torch.min()
-    pass
+def get_dims(m):
+    indices = torch.argwhere(m > 0)
+    l = indices[:, 1].min().item()
+    r = indices[:, 1].max().item()
+    t = indices[:, 0].min().item()
+    b = indices[:, 0].max().item()
+    return l, r, t, b

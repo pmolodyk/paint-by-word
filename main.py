@@ -15,7 +15,7 @@ from losses.CLIP_loss import CLIPLoss
 from losses.img_loss import ImgLoss
 from losses.discriminator_loss import DLogisticLoss
 from models.styleganv2.model import Generator, Discriminator
-from utils import generate_masks, get_args, extract_latent
+from utils import generate_masks, get_args, extract_latent, get_dims
 
 dir_name = os.path.dirname(__file__)
 
@@ -68,7 +68,20 @@ img_lam = config['optimization']['img_loss_lambda']
 latent_prox_lam = config['optimization']['latent_prox_lam']
 global_lpips_lam = config['optimization']['global_lpips_lam']
 discriminator_loss_lam = config['optimization']['discriminator_loss_lam']
-clip_loss = CLIPLoss(stylegan_size)
+clip_loss_mode = config['optimization']['clip_loss_mode']
+
+# CLIP loss setup
+l, r, t, b = get_dims(mask)
+side = max(r - l, b - t)
+mask_bounds = (l, l + side, t, t + side)
+
+if clip_loss_mode == 'product':
+    clip_loss = CLIPLoss(stylegan_size, clip_loss_mode)
+elif clip_loss_mode == 'crop':
+    clip_loss = CLIPLoss(side, clip_loss_mode)
+else:
+    raise ValueError('Invalid CLIP loss mode')
+# Other losses
 image_loss = ImgLoss(lam=l2_lam)
 latent_proximity_loss = torch.nn.MSELoss()
 global_lpips_loss = lpips.LPIPS(net='vgg').cuda()
@@ -94,7 +107,12 @@ for step in tqdm(range(opt_steps)):
     current_image, _ = stylegan_generator([latent], w1, input_is_latent=True, randomize_noise=False)
     critic_verdict_fake = stylegan_discriminator(current_image)
 
-    l_sem = clip_loss(current_image * mask, text_tokenized)
+    if clip_loss_mode == 'product':
+        l_sem = clip_loss(current_image * mask, text_tokenized)
+    elif clip_loss_mode == 'crop':
+        l_sem = clip_loss(current_image[:, :, mask_bounds[2] : mask_bounds[3], mask_bounds[0] : mask_bounds[1]], text_tokenized)
+    else:
+        raise ValueError('Invalid CLIP loss mode')
     l_img = image_loss(external_region, current_image * (1 - mask))
     l_prox = latent_proximity_loss(latent, w1)
     l_global = global_lpips_loss(initial_image, current_image)
