@@ -5,7 +5,10 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from models.styleganv2.op import FusedLeakyReLU, fused_leaky_relu, upfirdn2d
+try:
+    from models.styleganv2.op import FusedLeakyReLU, fused_leaky_relu, upfirdn2d
+except:
+    from paintbyword.models.styleganv2.op import FusedLeakyReLU, fused_leaky_relu, upfirdn2d
 
 
 class PixelNorm(nn.Module):

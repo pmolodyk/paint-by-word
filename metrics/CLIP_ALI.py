@@ -1,6 +1,9 @@
 # CLIP Average Loss Improvement metric
 
-from losses.CLIP_loss import CLIPLoss
+try:
+    from losses.CLIP_loss import CLIPLoss
+except:
+    from paintbyword.losses.CLIP_loss import CLIPLoss
 import torch
 
 

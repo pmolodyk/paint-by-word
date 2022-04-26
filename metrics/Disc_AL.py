@@ -1,6 +1,9 @@
 # Average discriminator loss
 
-from losses.discriminator_loss import DLogisticLoss
+try:
+    from losses.discriminator_loss import DLogisticLoss
+except:
+    from paintbyword.losses.discriminator_loss import DLogisticLoss
 import torch
 
 
