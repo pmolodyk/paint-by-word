@@ -394,7 +394,6 @@ class Generator(nn.Module):
         size,
         style_dim,
         n_mlp,
-        masks,
         no_split_layers_num=0,
         channel_multiplier=2,
         blur_kernel=[1, 3, 3, 1],
@@ -436,7 +435,6 @@ class Generator(nn.Module):
         self.to_rgb1 = ToRGB(self.channels[4], style_dim, upsample=False)
 
         self.log_size = int(math.log(size, 2))
-        self.masks = masks
         self.num_layers = (self.log_size - 2) * 2 + 1
         self.no_split_layers_num = no_split_layers_num
 
@@ -504,6 +502,7 @@ class Generator(nn.Module):
         self,
         styles,
         w1,
+        masks,
         return_latents=False,
         inject_index=None,
         truncation=1,
@@ -570,7 +569,7 @@ class Generator(nn.Module):
                 external = conv2(external, latent[:, i + 1], noise=noise2)
                 skip_external = to_rgb(external, latent[:, i + 2], skip)
 
-                mask = self.masks[internal.shape[-1]]
+                mask = masks[internal.shape[-1]]
                 out = internal * mask + external * (1 - mask)
                 skip = skip_internal * mask + skip_external * (1 - mask)
             else:

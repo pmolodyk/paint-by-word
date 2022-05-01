@@ -50,7 +50,7 @@ mask_by_resolution = generate_masks(upscale_layers_num, mask)
 w1 = latent.detach().clone().cuda()
 
 ckpt = torch.load(stylegan_weights_path)
-stylegan_generator = Generator(stylegan_size, stylegan_style_dim, stylegan_n_mlp, mask_by_resolution,
+stylegan_generator = Generator(stylegan_size, stylegan_style_dim, stylegan_n_mlp,
                                no_split_layers_num=no_split_layers_num).cuda()
 stylegan_generator.load_state_dict(ckpt["g_ema"], strict=False)
 stylegan_generator.eval()
@@ -89,7 +89,7 @@ discriminator_loss = DLogisticLoss()
 
 text_tokenized = torch.cat([clip.tokenize(args.text_input)]).cuda()
 with torch.no_grad():
-    current_image, _ = stylegan_generator([latent], w1, input_is_latent=True, randomize_noise=False)
+    current_image, _ = stylegan_generator([latent], w1, mask_by_resolution, input_is_latent=True, randomize_noise=False)
 torchvision.utils.save_image(current_image, os.path.join(results_path, 'initial_image.jpg'), normalize=True, range=(-1, 1))
 external_region = current_image.clone() * (1 - mask)
 initial_image = current_image.clone().detach()
@@ -104,7 +104,7 @@ for param in stylegan_discriminator.parameters():
 w1.requires_grad = True
 optimizer = Adam([w1], lr=lr)
 for step in tqdm(range(opt_steps)):
-    current_image, _ = stylegan_generator([latent], w1, input_is_latent=True, randomize_noise=False)
+    current_image, _ = stylegan_generator([latent], w1, mask_by_resolution, input_is_latent=True, randomize_noise=False)
     critic_verdict_fake = stylegan_discriminator(current_image)
 
     if clip_loss_mode == 'product':
